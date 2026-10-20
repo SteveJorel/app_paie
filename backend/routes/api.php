@@ -1,6 +1,8 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\SupplierController as AdminSupplierController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\SupplierController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -21,7 +23,18 @@ Route::prefix('v1')->group(function () {
         });
     });
 
+    Route::middleware(['auth:sanctum', 'role:client,supplier,admin,finance'])->group(function () {
+        Route::get('/suppliers', [SupplierController::class, 'index']);
+        Route::get('/suppliers/{supplier}', [SupplierController::class, 'show']);
+    });
+
     Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
         Route::get('/ping', fn () => response()->json(['message' => 'admin ok']));
+
+        Route::get('/suppliers', [AdminSupplierController::class, 'index']);
+        Route::post('/suppliers', [AdminSupplierController::class, 'store']);
+        Route::patch('/suppliers/{supplier}', [AdminSupplierController::class, 'update']);
+        Route::post('/suppliers/{supplier}/approve', [AdminSupplierController::class, 'approve']);
+        Route::post('/suppliers/{supplier}/suspend', [AdminSupplierController::class, 'suspend']);
     });
 });
