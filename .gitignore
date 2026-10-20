@@ -1,0 +1,14 @@
+@"
+# Systèmes et éditeurs
+.DS_Store
+Thumbs.db
+.idea/
+*.log
+
+# Secrets : ne jamais versionner
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+"@ | Set-Content .gitignore -Encoding utf8
