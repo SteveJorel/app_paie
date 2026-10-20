@@ -1,14 +1,12 @@
-Set-Content .gitignore -Encoding utf8 -Value @(
-'# Systemes et editeurs',
-'.DS_Store',
-'Thumbs.db',
-'.idea/',
-'*.log',
-'',
-'# Secrets : ne jamais versionner',
-'.env',
-'.env.*',
-'!.env.example',
-'*.pem',
-'*.key'
-)
+# Systemes et editeurs
+.DS_Store
+Thumbs.db
+.idea/
+*.log
+
+# Secrets : ne jamais versionner
+.env
+.env.*
+!.env.example
+*.pem
+*.key
