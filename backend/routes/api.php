@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\CommissionRuleController;
 use App\Http\Controllers\Api\V1\Admin\SupplierController as AdminSupplierController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\SupplierController;
@@ -28,6 +29,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/suppliers/{supplier}', [SupplierController::class, 'show']);
     });
 
+    // Consultation des règles de commission : administrateur et responsable financier.
+    Route::middleware(['auth:sanctum', 'role:admin,finance'])->prefix('admin')->group(function () {
+        Route::get('/commission-rules', [CommissionRuleController::class, 'index']);
+    });
+
     Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
         Route::get('/ping', fn () => response()->json(['message' => 'admin ok']));
 
@@ -36,5 +42,8 @@ Route::prefix('v1')->group(function () {
         Route::patch('/suppliers/{supplier}', [AdminSupplierController::class, 'update']);
         Route::post('/suppliers/{supplier}/approve', [AdminSupplierController::class, 'approve']);
         Route::post('/suppliers/{supplier}/suspend', [AdminSupplierController::class, 'suspend']);
+
+        Route::post('/commission-rules', [CommissionRuleController::class, 'store']);
+        Route::post('/commission-rules/{commissionRule}/retire', [CommissionRuleController::class, 'retire']);
     });
 });
