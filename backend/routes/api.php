@@ -6,6 +6,7 @@ use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\SupplierController;
+use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WebhookController;
 use Illuminate\Support\Facades\Route;
 
@@ -45,6 +46,14 @@ Route::prefix('v1')->group(function () {
         Route::get('/payments/{payment}', [PaymentController::class, 'show']);
     });
 
+    // Historique et reçus du client.
+    Route::middleware(['auth:sanctum', 'role:client'])->prefix('me')->group(function () {
+        Route::get('/transactions', [TransactionController::class, 'index']);
+        Route::get('/transactions/{payment}', [TransactionController::class, 'show']);
+        Route::get('/transactions/{payment}/receipt', [TransactionController::class, 'receipt']);
+        Route::get('/receipts/{receipt}/download', [TransactionController::class, 'download']);
+    });
+
     // Consultation des règles de commission : administrateur et responsable financier.
     Route::middleware(['auth:sanctum', 'role:admin,finance'])->prefix('admin')->group(function () {
         Route::get('/commission-rules', [CommissionRuleController::class, 'index']);
@@ -63,4 +72,3 @@ Route::prefix('v1')->group(function () {
         Route::post('/commission-rules/{commissionRule}/retire', [CommissionRuleController::class, 'retire']);
     });
 });
-

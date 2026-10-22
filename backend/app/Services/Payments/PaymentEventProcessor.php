@@ -137,6 +137,11 @@ final class PaymentEventProcessor
             'actor_type' => 'provider',
             'actor_id' => null,
         ]);
+        
+        // Un paiement confirmé donne lieu à son reçu, dans la même transaction que le changement de statut.
+        if ($target === PaymentStatus::Paid) {
+            ReceiptIssuer::issueFor($payment);
+        }
     }
 
     private function orderStatusFor(PaymentStatus $status): OrderStatus
