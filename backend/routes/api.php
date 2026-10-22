@@ -3,7 +3,10 @@
 use App\Http\Controllers\Api\V1\Admin\CommissionRuleController;
 use App\Http\Controllers\Api\V1\Admin\SupplierController as AdminSupplierController;
 use App\Http\Controllers\Api\V1\AuthController;
+use App\Http\Controllers\Api\V1\OrderController;
+use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\SupplierController;
+use App\Http\Controllers\Api\V1\WebhookController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -13,6 +16,11 @@ Route::prefix('v1')->group(function () {
             'time' => now()->toIso8601String(),
         ]);
     });
+
+    // Événements du prestataire : pas de jeton, l'authenticité repose sur la signature.
+    Route::post('/webhooks/{provider}', [WebhookController::class, 'handle'])
+        ->where('provider', '[a-z0-9_]+')
+        ->middleware('throttle:120,1');
 
     Route::prefix('auth')->group(function () {
         Route::post('/register', [AuthController::class, 'register'])->middleware('throttle:10,1');
@@ -27,6 +35,14 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'role:client,supplier,admin,finance'])->group(function () {
         Route::get('/suppliers', [SupplierController::class, 'index']);
         Route::get('/suppliers/{supplier}', [SupplierController::class, 'show']);
+    });
+
+    // Commandes et paiements : réservés aux clients, chacun ne voit que les siens.
+    Route::middleware(['auth:sanctum', 'role:client'])->group(function () {
+        Route::post('/orders', [OrderController::class, 'store']);
+        Route::get('/orders/{order}', [OrderController::class, 'show']);
+        Route::post('/orders/{order}/payment-intent', [PaymentController::class, 'intent'])->middleware('throttle:20,1');
+        Route::get('/payments/{payment}', [PaymentController::class, 'show']);
     });
 
     // Consultation des règles de commission : administrateur et responsable financier.
@@ -47,3 +63,4 @@ Route::prefix('v1')->group(function () {
         Route::post('/commission-rules/{commissionRule}/retire', [CommissionRuleController::class, 'retire']);
     });
 });
+
