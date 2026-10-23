@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Api\V1\Admin\CommissionRuleController;
 use App\Http\Controllers\Api\V1\Admin\ReportController;
+use App\Http\Controllers\Api\V1\Admin\RefundController;
 use App\Http\Controllers\Api\V1\Admin\SupplierController as AdminSupplierController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\OrderController;
@@ -79,5 +80,7 @@ Route::prefix('v1')->group(function () {
 
         Route::post('/commission-rules', [CommissionRuleController::class, 'store']);
         Route::post('/commission-rules/{commissionRule}/retire', [CommissionRuleController::class, 'retire']);
+
+        Route::post('/refunds', [RefundController::class, 'store']);
     });
 });

@@ -6,6 +6,7 @@ use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Receipt;
 use App\Models\Supplier;
+use App\Models\Refund;
 
 final class ReceiptIssuer
 {
@@ -50,5 +51,26 @@ final class ReceiptIssuer
             ],
             'issued_at' => $issuedAt,
         ]);
+    }
+
+        public static function issueRefundFor(Payment $payment, Refund $refund): Receipt
+    {
+        return Receipt::firstOrCreate(
+            ['payment_id' => $payment->id, 'receipt_type' => 'refund'],
+            [
+                'receipt_number' => 'RC-'.now()->format('Y').sprintf('-R%08d', $payment->id),
+                'user_id' => $payment->user_id,
+                'status' => 'refunded',
+                'snapshot' => [
+                    'payment_reference' => $payment->reference,
+                    'refund_reference' => $refund->reference,
+                    'amount_minor' => $refund->amount_minor,
+                    'currency' => $refund->currency,
+                    'reason' => $refund->reason,
+                    'issued_at' => now()->toIso8601String(),
+                ],
+                'issued_at' => now(),
+            ]
+        );
     }
 }
