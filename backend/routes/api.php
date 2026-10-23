@@ -8,6 +8,7 @@ use App\Http\Controllers\Api\V1\PaymentController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WebhookController;
+use App\Http\Controllers\Api\V1\SupplierPortalController;
 use Illuminate\Support\Facades\Route;
 
 Route::prefix('v1')->group(function () {
@@ -31,6 +32,12 @@ Route::prefix('v1')->group(function () {
             Route::get('/me', [AuthController::class, 'me']);
             Route::post('/logout', [AuthController::class, 'logout']);
         });
+    });
+
+    // Portail fournisseur : chaque fournisseur ne voit que ses propres transactions et reversements.
+    Route::middleware(['auth:sanctum', 'role:supplier'])->prefix('supplier')->group(function () {
+        Route::get('/transactions', [SupplierPortalController::class, 'transactions']);
+        Route::get('/settlements', [SupplierPortalController::class, 'settlements']);
     });
 
     Route::middleware(['auth:sanctum', 'role:client,supplier,admin,finance'])->group(function () {

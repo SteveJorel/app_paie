@@ -117,7 +117,7 @@ final class PaymentEventProcessor
         return $allowed ? ['processed', true] : ['ignored', false];
     }
 
-    private function apply(Payment $payment, PaymentStatus $current, PaymentStatus $target, array $event): void
+        private function apply(Payment $payment, PaymentStatus $current, PaymentStatus $target, array $event): void
     {
         $payment->update([
             'status' => $target->value,
@@ -137,10 +137,10 @@ final class PaymentEventProcessor
             'actor_type' => 'provider',
             'actor_id' => null,
         ]);
-        
-        // Un paiement confirmé donne lieu à son reçu, dans la même transaction que le changement de statut.
+
         if ($target === PaymentStatus::Paid) {
             ReceiptIssuer::issueFor($payment);
+            SettlementIssuer::issueFor($payment);
         }
     }
 
