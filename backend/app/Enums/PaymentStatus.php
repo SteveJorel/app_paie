@@ -10,6 +10,8 @@ enum PaymentStatus: string
     case Paid = 'paid';
     case Failed = 'failed';
     case Expired = 'expired';
+    case Refunded = 'refunded';
+    case Disputed = 'disputed';
 
     /**
      * Statuts qui empêchent d'ouvrir un nouveau paiement sur la même commande.

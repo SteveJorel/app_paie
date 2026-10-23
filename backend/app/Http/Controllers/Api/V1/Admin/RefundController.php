@@ -7,6 +7,7 @@ use App\Models\Payment;
 use App\Models\Refund;
 use App\Models\TransactionHistory;
 use App\Services\Audit\AuditLogger;
+use App\Services\Notifications\NotificationDispatcher;
 use App\Services\Payments\ReceiptIssuer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -24,7 +25,11 @@ class RefundController extends Controller
         return DB::transaction(function () use ($data, $request) {
             $payment = Payment::whereKey($data['payment_id'])->lockForUpdate()->firstOrFail();
 
-            abort_if($payment->status !== 'paid', 422, 'Seul un paiement confirmé peut être remboursé.');
+            abort_if(
+                ! in_array($payment->status, ['paid', 'disputed'], true),
+                422,
+                'Seul un paiement confirmé ou contesté peut être remboursé.'
+            );
             abort_if(Refund::where('payment_id', $payment->id)->exists(), 422, 'Ce paiement a déjà fait l\'objet d\'un remboursement.');
 
             $refund = Refund::create([
@@ -67,6 +72,10 @@ class RefundController extends Controller
                     'amount_minor' => $refund->amount_minor,
                 ],
             );
+
+            NotificationDispatcher::dispatch($payment->user_id, $payment->id, 'refund.completed', [
+                'refund_reference' => $refund->reference,
+            ]);
 
             return response()->json(['data' => $refund], 201);
         });

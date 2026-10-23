@@ -12,6 +12,7 @@ use Illuminate\Database\UniqueConstraintViolationException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use App\Services\Ledger\LedgerRecorder;
+use App\Services\Notifications\NotificationDispatcher;
 
 final class PaymentEventProcessor
 {
@@ -118,7 +119,7 @@ final class PaymentEventProcessor
         return $allowed ? ['processed', true] : ['ignored', false];
     }
 
-           private function apply(Payment $payment, PaymentStatus $current, PaymentStatus $target, array $event): void
+              private function apply(Payment $payment, PaymentStatus $current, PaymentStatus $target, array $event): void
     {
         $payment->update([
             'status' => $target->value,
@@ -144,6 +145,8 @@ final class PaymentEventProcessor
             SettlementIssuer::issueFor($payment);
             LedgerRecorder::recordForPayment($payment);
         }
+
+        NotificationDispatcher::dispatch($payment->user_id, $payment->id, 'payment.'.$target->value);
     }
 
     private function orderStatusFor(PaymentStatus $status): OrderStatus
