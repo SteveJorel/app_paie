@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\Api\V1\Admin\CommissionRuleController;
+use App\Http\Controllers\Api\V1\Admin\ReportController;
 use App\Http\Controllers\Api\V1\Admin\SupplierController as AdminSupplierController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\OrderController;
@@ -61,9 +62,10 @@ Route::prefix('v1')->group(function () {
         Route::get('/receipts/{receipt}/download', [TransactionController::class, 'download']);
     });
 
-    // Consultation des règles de commission : administrateur et responsable financier.
+    // Consultation des règles de commission et rapport de rapprochement : administrateur et responsable financier.
     Route::middleware(['auth:sanctum', 'role:admin,finance'])->prefix('admin')->group(function () {
         Route::get('/commission-rules', [CommissionRuleController::class, 'index']);
+        Route::get('/reports/settlements', [ReportController::class, 'settlements']);
     });
 
     Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
