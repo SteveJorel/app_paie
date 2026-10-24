@@ -11,6 +11,7 @@ use App\Models\Allocation;
 use App\Models\Order;
 use App\Models\Payment;
 use App\Models\Supplier;
+use App\Models\TransactionHistory;
 use App\Services\Commission\CommissionCalculator;
 use App\Services\Commission\NoCommissionRuleException;
 use App\Services\Payments\PaymentGateway;
@@ -130,10 +131,30 @@ class PaymentController extends Controller
                 'status' => $result->status->value,
             ]);
             $order->update(['status' => OrderStatus::Pending->value]);
+
+            TransactionHistory::create([
+                'payment_id' => $payment->id,
+                'previous_status' => PaymentStatus::Created->value,
+                'new_status' => $result->status->value,
+                'event_type' => 'payment.initiated',
+                'event_reference' => $result->providerReference,
+                'actor_type' => 'client',
+                'actor_id' => $user->id,
+            ]);
         } catch (Throwable $e) {
             report($e);
 
             $payment->update(['status' => PaymentStatus::Failed->value]);
+
+            TransactionHistory::create([
+                'payment_id' => $payment->id,
+                'previous_status' => PaymentStatus::Created->value,
+                'new_status' => PaymentStatus::Failed->value,
+                'event_type' => 'payment.initiation_failed',
+                'event_reference' => null,
+                'actor_type' => 'client',
+                'actor_id' => $user->id,
+            ]);
 
             return $this->respond(
                 $payment,
