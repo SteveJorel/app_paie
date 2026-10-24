@@ -3,6 +3,7 @@
 use App\Http\Controllers\Api\V1\Admin\AuditLogController;
 use App\Http\Controllers\Api\V1\Admin\CommissionRuleController;
 use App\Http\Controllers\Api\V1\Admin\DisputeController;
+use App\Http\Controllers\Api\V1\Admin\PaymentMethodAvailabilityController;
 use App\Http\Controllers\Api\V1\Admin\ReportController;
 use App\Http\Controllers\Api\V1\Admin\RefundController;
 use App\Http\Controllers\Api\V1\Admin\SupplierController as AdminSupplierController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\Api\V1\Admin\TransactionController as AdminTransactionC
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PaymentController;
+use App\Http\Controllers\Api\V1\PaymentMethodController;
 use App\Http\Controllers\Api\V1\SupplierController;
 use App\Http\Controllers\Api\V1\TransactionController;
 use App\Http\Controllers\Api\V1\WebhookController;
@@ -48,6 +50,7 @@ Route::prefix('v1')->group(function () {
     Route::middleware(['auth:sanctum', 'role:client,supplier,admin,finance'])->group(function () {
         Route::get('/suppliers', [SupplierController::class, 'index']);
         Route::get('/suppliers/{supplier}', [SupplierController::class, 'show']);
+        Route::get('/payment-methods', [PaymentMethodController::class, 'index']);
     });
 
     // Commandes et paiements : réservés aux clients, chacun ne voit que les siens.
@@ -91,5 +94,8 @@ Route::prefix('v1')->group(function () {
         Route::post('/payments/{payment}/resolve-dispute', [DisputeController::class, 'resolve']);
 
         Route::get('/audit-logs', [AuditLogController::class, 'index']);
+
+        Route::get('/payment-methods', [PaymentMethodAvailabilityController::class, 'index']);
+        Route::patch('/payment-methods/{country}/{method}', [PaymentMethodAvailabilityController::class, 'update']);
     });
 });
