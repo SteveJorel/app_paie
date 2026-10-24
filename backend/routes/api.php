@@ -1,10 +1,12 @@
 <?php
 
+use App\Http\Controllers\Api\V1\Admin\AuditLogController;
 use App\Http\Controllers\Api\V1\Admin\CommissionRuleController;
 use App\Http\Controllers\Api\V1\Admin\DisputeController;
 use App\Http\Controllers\Api\V1\Admin\ReportController;
 use App\Http\Controllers\Api\V1\Admin\RefundController;
 use App\Http\Controllers\Api\V1\Admin\SupplierController as AdminSupplierController;
+use App\Http\Controllers\Api\V1\Admin\TransactionController as AdminTransactionController;
 use App\Http\Controllers\Api\V1\AuthController;
 use App\Http\Controllers\Api\V1\OrderController;
 use App\Http\Controllers\Api\V1\PaymentController;
@@ -64,10 +66,11 @@ Route::prefix('v1')->group(function () {
         Route::get('/receipts/{receipt}/download', [TransactionController::class, 'download']);
     });
 
-    // Consultation des règles de commission et rapport de rapprochement : administrateur et responsable financier.
+    // Consultation des règles de commission, rapport de rapprochement et historique centralisé : administrateur et responsable financier.
     Route::middleware(['auth:sanctum', 'role:admin,finance'])->prefix('admin')->group(function () {
         Route::get('/commission-rules', [CommissionRuleController::class, 'index']);
         Route::get('/reports/settlements', [ReportController::class, 'settlements']);
+        Route::get('/transactions', [AdminTransactionController::class, 'index']);
     });
 
     Route::middleware(['auth:sanctum', 'role:admin'])->prefix('admin')->group(function () {
@@ -86,5 +89,7 @@ Route::prefix('v1')->group(function () {
 
         Route::post('/payments/{payment}/dispute', [DisputeController::class, 'open']);
         Route::post('/payments/{payment}/resolve-dispute', [DisputeController::class, 'resolve']);
+
+        Route::get('/audit-logs', [AuditLogController::class, 'index']);
     });
 });
