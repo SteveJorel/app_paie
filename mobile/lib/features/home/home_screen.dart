@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../auth/auth_state.dart';
 import '../suppliers/suppliers_screen.dart';
+import '../transactions/transactions_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -32,6 +33,13 @@ class HomeScreen extends StatelessWidget {
                 MaterialPageRoute(builder: (_) => const SuppliersScreen()),
               ),
               child: const Text('Voir les fournisseurs'),
+            ),
+            const SizedBox(height: 12),
+            OutlinedButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const TransactionsScreen()),
+              ),
+              child: const Text('Mes transactions'),
             ),
           ],
         ),
