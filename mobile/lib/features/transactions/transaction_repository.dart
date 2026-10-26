@@ -21,4 +21,18 @@ class TransactionRepository {
 
     return Map<String, dynamic>.from(response as Map);
   }
+
+  Future<Map<String, dynamic>> receiptFor(int paymentId) async {
+    final response = await _client.get('/me/transactions/$paymentId/receipt');
+
+    if (response is Map && response['data'] is Map) {
+      return Map<String, dynamic>.from(response['data'] as Map);
+    }
+
+    return Map<String, dynamic>.from(response as Map);
+  }
+
+  Future<List<int>> downloadReceiptPdf(int receiptId) {
+    return _client.getBytes('/me/receipts/$receiptId/download');
+  }
 }

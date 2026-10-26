@@ -34,6 +34,37 @@ class ApiClient {
     return _handle(response);
   }
 
+  Future<List<int>> getBytes(String path, {bool withAuth = true}) async {
+    final response = await http.get(
+      Uri.parse('${ApiConfig.baseUrl}$path'),
+      headers: {
+        'Accept': 'application/pdf',
+        if (withAuth) ...await _authHeaderOnly(),
+      },
+    );
+
+    if (response.statusCode >= 200 && response.statusCode < 300) {
+      return response.bodyBytes;
+    }
+
+    String message = 'Une erreur est survenue (${response.statusCode}).';
+    try {
+      final decoded = jsonDecode(response.body);
+      if (decoded is Map && decoded['message'] != null) {
+        message = decoded['message'] as String;
+      }
+    } catch (_) {
+      // Le corps n'est pas du JSON (normal pour une réponse binaire d'erreur générique) ; on garde le message par défaut.
+    }
+
+    throw ApiException(response.statusCode, message);
+  }
+
+  Future<Map<String, String>> _authHeaderOnly() async {
+    final token = await _tokenStorage.read();
+    return token != null ? {'Authorization': 'Bearer $token'} : {};
+  }
+
   Future<dynamic> post(
     String path,
     Map<String, dynamic> body, {
