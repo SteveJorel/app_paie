@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../auth/auth_state.dart';
+import '../suppliers/suppliers_screen.dart';
 
 class HomeScreen extends StatelessWidget {
   const HomeScreen({super.key});
@@ -21,7 +22,19 @@ class HomeScreen extends StatelessWidget {
         ],
       ),
       body: Center(
-        child: Text(name != null ? 'Bonjour, $name !' : 'Connecté.'),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(name != null ? 'Bonjour, $name !' : 'Connecté.'),
+            const SizedBox(height: 24),
+            ElevatedButton(
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const SuppliersScreen()),
+              ),
+              child: const Text('Voir les fournisseurs'),
+            ),
+          ],
+        ),
       ),
     );
   }

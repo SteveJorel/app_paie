@@ -9,10 +9,11 @@ class ApiClient {
 
   ApiClient({TokenStorage? tokenStorage}) : _tokenStorage = tokenStorage ?? TokenStorage();
 
-  Future<Map<String, String>> _headers({bool withAuth = true}) async {
+  Future<Map<String, String>> _headers({bool withAuth = true, Map<String, String>? extra}) async {
     final headers = {
       'Accept': 'application/json',
       'Content-Type': 'application/json',
+      ...?extra,
     };
 
     if (withAuth) {
@@ -33,19 +34,29 @@ class ApiClient {
     return _handle(response);
   }
 
-  Future<dynamic> post(String path, Map<String, dynamic> body, {bool withAuth = true}) async {
+  Future<dynamic> post(
+    String path,
+    Map<String, dynamic> body, {
+    bool withAuth = true,
+    Map<String, String>? extraHeaders,
+  }) async {
     final response = await http.post(
       Uri.parse('${ApiConfig.baseUrl}$path'),
-      headers: await _headers(withAuth: withAuth),
+      headers: await _headers(withAuth: withAuth, extra: extraHeaders),
       body: jsonEncode(body),
     );
     return _handle(response);
   }
 
-  Future<dynamic> patch(String path, Map<String, dynamic> body, {bool withAuth = true}) async {
+  Future<dynamic> patch(
+    String path,
+    Map<String, dynamic> body, {
+    bool withAuth = true,
+    Map<String, String>? extraHeaders,
+  }) async {
     final response = await http.patch(
       Uri.parse('${ApiConfig.baseUrl}$path'),
-      headers: await _headers(withAuth: withAuth),
+      headers: await _headers(withAuth: withAuth, extra: extraHeaders),
       body: jsonEncode(body),
     );
     return _handle(response);
