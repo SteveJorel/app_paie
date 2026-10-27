@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../../core/format.dart';
 import 'transaction_repository.dart';
 import 'transaction_detail_screen.dart';
 
@@ -39,6 +40,7 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
       case 'expired':
         return Colors.red;
       case 'refunded':
+      case 'partially_refunded':
       case 'disputed':
         return Colors.orange;
       default:
@@ -99,20 +101,22 @@ class _TransactionsScreenState extends State<TransactionsScreen> {
                 final row = rows[index];
                 final reference = _field(row, ['reference', 'payment_reference']);
                 final description = _field(row, ['description']);
-                final amount = _field(row, ['amount_minor']);
-                final currency = _field(row, ['currency']);
+                final supplier = row['supplier'] is Map ? (row['supplier'] as Map)['name'] : null;
                 final status = _field(row, ['status']);
                 final id = row['id'];
 
                 return ListTile(
                   title: Text(reference),
-                  subtitle: Text(description),
+                  subtitle: Text(supplier != null ? '$supplier · $description' : description),
                   trailing: Column(
                     mainAxisAlignment: MainAxisAlignment.center,
                     crossAxisAlignment: CrossAxisAlignment.end,
                     children: [
-                      Text('$amount $currency'),
-                      Text(status, style: TextStyle(color: _statusColor(status), fontWeight: FontWeight.bold)),
+                      Text(formatAmount(row['amount_minor'], row['currency'])),
+                      Text(
+                        statusLabel(status),
+                        style: TextStyle(color: _statusColor(status), fontWeight: FontWeight.bold),
+                      ),
                     ],
                   ),
                   onTap: id is int
