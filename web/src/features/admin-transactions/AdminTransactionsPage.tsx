@@ -1,65 +1,55 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import {
   adminTransactionsRepository,
   type TransactionRow,
   type TransactionFilters,
 } from './adminTransactionsRepository';
 import { ApiException } from '../../core/apiException';
-
-const STATUS_LABELS: Record<string, string> = {
-  created: 'Créé',
-  pending: 'En attente',
-  requires_action: 'Action requise',
-  paid: 'Payé',
-  failed: 'Échoué',
-  expired: 'Expiré',
-  refunded: 'Remboursé',
-  disputed: 'Contesté',
-};
-
-function formatAmount(amountMinor: number, currency: string) {
-  const factor = currency === 'NGN' ? 100 : 1;
-  return `${(amountMinor / factor).toLocaleString('fr-FR')} ${currency}`;
-}
-
-function badgeClass(status: string) {
-  if (status === 'paid') return 'badge-active';
-  if (status === 'failed' || status === 'expired') return 'badge-failed';
-  return 'badge-pending';
-}
+import { formatMinor, formatDateTime, STATUS_LABELS, statusBadgeClass } from '../../core/format';
 
 export default function AdminTransactionsPage() {
   const [rows, setRows] = useState<TransactionRow[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
-  const [filters, setFilters] = useState<TransactionFilters>({});
+  const [filters, setFilters] = useState<TransactionFilters>({}); // saisie en cours
+  const [appliedFilters, setAppliedFilters] = useState<TransactionFilters>({}); // filtres réellement appliqués
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const latestRequest = useRef(0);
 
-  async function load(targetPage = page, activeFilters = filters) {
+  async function load(targetPage: number, activeFilters: TransactionFilters) {
+    const requestId = ++latestRequest.current;
     setIsLoading(true);
     setError(null);
     try {
       const result = await adminTransactionsRepository.list({ ...activeFilters, page: targetPage });
+      if (requestId !== latestRequest.current) return; // réponse périmée : une requête plus récente est partie
       setRows(result.data);
       setPage(result.current_page);
       setLastPage(result.last_page);
     } catch (e) {
+      if (requestId !== latestRequest.current) return;
       setError(e instanceof ApiException ? e.message : 'Connexion impossible.');
     } finally {
-      setIsLoading(false);
+      if (requestId === latestRequest.current) setIsLoading(false);
     }
   }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load(1, {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleFilterSubmit(event: FormEvent) {
     event.preventDefault();
+    setAppliedFilters(filters);
     load(1, filters);
+  }
+
+  function handleReset() {
+    setFilters({});
+    setAppliedFilters({});
+    load(1, {});
   }
 
   return (
@@ -100,6 +90,9 @@ export default function AdminTransactionsPage() {
         <button type="submit" className="btn btn-primary">
           Filtrer
         </button>
+        <button type="button" className="btn btn-outline" onClick={handleReset}>
+          Réinitialiser
+        </button>
       </form>
 
       {error && <p className="auth-error">{error}</p>}
@@ -132,24 +125,24 @@ export default function AdminTransactionsPage() {
                   <td>{row.order_reference}</td>
                   <td>{row.supplier_name}</td>
                   <td>{row.country_code}</td>
-                  <td>{formatAmount(row.amount_minor, row.currency)}</td>
+                  <td>{formatMinor(row.amount_minor, row.currency)}</td>
                   <td>
-                    <span className={`badge ${badgeClass(row.status)}`}>{STATUS_LABELS[row.status] ?? row.status}</span>
+                    <span className={`badge ${statusBadgeClass(row.status)}`}>{STATUS_LABELS[row.status] ?? row.status}</span>
                   </td>
-                  <td>{new Date(row.created_at).toLocaleString('fr-FR')}</td>
+                  <td>{formatDateTime(row.created_at)}</td>
                 </tr>
               ))}
             </tbody>
           </table>
 
           <div className="pagination">
-            <button className="btn btn-outline" disabled={page <= 1} onClick={() => load(page - 1)}>
+            <button className="btn btn-outline" disabled={page <= 1} onClick={() => load(page - 1, appliedFilters)}>
               ← Précédent
             </button>
             <span>
               Page {page} / {lastPage}
             </span>
-            <button className="btn btn-outline" disabled={page >= lastPage} onClick={() => load(page + 1)}>
+            <button className="btn btn-outline" disabled={page >= lastPage} onClick={() => load(page + 1, appliedFilters)}>
               Suivant →
             </button>
           </div>

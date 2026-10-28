@@ -1,6 +1,7 @@
-import { Fragment, useEffect, useState, type FormEvent } from 'react';
+import { Fragment, useEffect, useRef, useState, type FormEvent } from 'react';
 import { adminAuditLogsRepository, type AuditLogRow, type AuditLogFilters } from './adminAuditLogsRepository';
 import { ApiException } from '../../core/apiException';
+import { formatDateTime } from '../../core/format';
 
 function shortType(type: string) {
   const parts = type.split('\\');
@@ -11,35 +12,47 @@ export default function AdminAuditLogsPage() {
   const [rows, setRows] = useState<AuditLogRow[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
-  const [filters, setFilters] = useState<AuditLogFilters>({});
+  const [filters, setFilters] = useState<AuditLogFilters>({}); // saisie en cours
+  const [appliedFilters, setAppliedFilters] = useState<AuditLogFilters>({}); // filtres réellement appliqués
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [expanded, setExpanded] = useState<number | null>(null);
+  const latestRequest = useRef(0);
 
-  async function load(targetPage = page, activeFilters = filters) {
+  async function load(targetPage: number, activeFilters: AuditLogFilters) {
+    const requestId = ++latestRequest.current;
     setIsLoading(true);
     setError(null);
+    setExpanded(null);
     try {
       const result = await adminAuditLogsRepository.list({ ...activeFilters, page: targetPage });
+      if (requestId !== latestRequest.current) return; // réponse périmée : une requête plus récente est partie
       setRows(result.data);
       setPage(result.current_page);
       setLastPage(result.last_page);
     } catch (e) {
+      if (requestId !== latestRequest.current) return;
       setError(e instanceof ApiException ? e.message : 'Connexion impossible.');
     } finally {
-      setIsLoading(false);
+      if (requestId === latestRequest.current) setIsLoading(false);
     }
   }
 
   useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load(1, {});
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function handleFilterSubmit(event: FormEvent) {
     event.preventDefault();
+    setAppliedFilters(filters);
     load(1, filters);
+  }
+
+  function handleReset() {
+    setFilters({});
+    setAppliedFilters({});
+    load(1, {});
   }
 
   return (
@@ -58,6 +71,9 @@ export default function AdminAuditLogsPage() {
         <input type="date" value={filters.to ?? ''} onChange={(e) => setFilters((f) => ({ ...f, to: e.target.value }))} />
         <button type="submit" className="btn btn-primary">
           Filtrer
+        </button>
+        <button type="button" className="btn btn-outline" onClick={handleReset}>
+          Réinitialiser
         </button>
       </form>
 
@@ -86,7 +102,7 @@ export default function AdminAuditLogsPage() {
               {rows.map((row) => (
                 <Fragment key={row.id}>
                   <tr>
-                    <td>{new Date(row.created_at).toLocaleString('fr-FR')}</td>
+                    <td>{formatDateTime(row.created_at)}</td>
                     <td>{row.actor_id ? `#${row.actor_id} (${row.actor_role ?? '-'})` : 'Système'}</td>
                     <td>{row.action}</td>
                     <td>
@@ -114,13 +130,13 @@ export default function AdminAuditLogsPage() {
           </table>
 
           <div className="pagination">
-            <button className="btn btn-outline" disabled={page <= 1} onClick={() => load(page - 1)}>
+            <button className="btn btn-outline" disabled={page <= 1} onClick={() => load(page - 1, appliedFilters)}>
               ← Précédent
             </button>
             <span>
               Page {page} / {lastPage}
             </span>
-            <button className="btn btn-outline" disabled={page >= lastPage} onClick={() => load(page + 1)}>
+            <button className="btn btn-outline" disabled={page >= lastPage} onClick={() => load(page + 1, appliedFilters)}>
               Suivant →
             </button>
           </div>
