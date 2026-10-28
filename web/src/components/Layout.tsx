@@ -15,6 +15,10 @@ export default function Layout({ children }: { children: ReactNode }) {
   if (role === 'admin' || role === 'finance') {
     navItems.push({ to: '/admin/commission-rules', label: 'Commissions' });
     navItems.push({ to: '/admin/reports', label: 'Rapprochement' });
+    navItems.push({ to: '/admin/transactions', label: 'Transactions' });
+  }
+  if (role === 'admin') {
+    navItems.push({ to: '/admin/audit-logs', label: "Journal d'audit" });
   }
 
   return (

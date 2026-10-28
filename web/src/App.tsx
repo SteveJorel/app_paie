@@ -6,6 +6,8 @@ import DashboardPage from './pages/DashboardPage';
 import AdminSuppliersPage from './features/admin-suppliers/AdminSuppliersPage';
 import AdminCommissionRulesPage from './features/admin-commission-rules/AdminCommissionRulesPage';
 import AdminReportsPage from './features/admin-reports/AdminReportsPage';
+import AdminTransactionsPage from './features/admin-transactions/AdminTransactionsPage';
+import AdminAuditLogsPage from './features/admin-audit-logs/AdminAuditLogsPage';
 
 export default function App() {
   return (
@@ -47,6 +49,26 @@ export default function App() {
           <ProtectedRoute allowedRoles={['admin', 'finance']}>
             <Layout>
               <AdminReportsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/transactions"
+        element={
+          <ProtectedRoute allowedRoles={['admin', 'finance']}>
+            <Layout>
+              <AdminTransactionsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/audit-logs"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout>
+              <AdminAuditLogsPage />
             </Layout>
           </ProtectedRoute>
         }

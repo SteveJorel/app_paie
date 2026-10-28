@@ -180,3 +180,8 @@ tr:last-child td { border-bottom: none; }
 .stat-label { font-size: 12px; color: #6b7280; text-transform: uppercase; }
 .stat-value { font-size: 24px; font-weight: 700; }
 .stat-warning .stat-value { color: #b45309; }
+
+.filters-bar { display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 20px; }
+.filters-bar input, .filters-bar select { padding: 8px 10px; border: 1px solid var(--color-border); border-radius: 6px; font-size: 13px; }
+.pagination { display: flex; align-items: center; gap: 16px; justify-content: center; margin-top: 20px; }
+.json-preview { background: #f9fafb; padding: 12px; border-radius: 6px; font-size: 12px; overflow-x: auto; }
