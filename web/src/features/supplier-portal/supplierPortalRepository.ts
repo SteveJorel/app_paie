@@ -1,6 +1,17 @@
 import { apiClient } from '../../core/apiClient';
 import { extractPaginated, type Paginated } from '../../core/pagination';
 
+export interface SupplierProfile {
+  business_name: string;
+  country_code: string;
+  category: string | null;
+  settlement_currency: string;
+  contact_email: string | null;
+  contact_phone: string | null;
+  status: string; // pending | active | suspended
+  created_at: string;
+}
+
 export interface SupplierTransactionRow {
   payment_reference: string;
   order_reference: string;
@@ -28,6 +39,11 @@ export interface SettlementRow {
 }
 
 export const supplierPortalRepository = {
+  async profile(): Promise<SupplierProfile> {
+    const response = await apiClient.get('/supplier/profile');
+    return response.data as SupplierProfile;
+  },
+
   async transactions(page: number): Promise<Paginated<SupplierTransactionRow>> {
     const response = await apiClient.get(`/supplier/transactions?page=${page}`);
     return extractPaginated<SupplierTransactionRow>(response);

@@ -10,6 +10,7 @@ export default function Layout({ children }: { children: ReactNode }) {
   const navItems: { to: string; label: string }[] = [{ to: '/', label: 'Accueil' }];
 
   if (role === 'supplier') {
+    navItems.push({ to: '/supplier/profile', label: 'Mon profil' });
     navItems.push({ to: '/supplier/transactions', label: 'Mes transactions' });
     navItems.push({ to: '/supplier/settlements', label: 'Mes reversements' });
   }

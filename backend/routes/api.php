@@ -43,6 +43,7 @@ Route::prefix('v1')->group(function () {
 
     // Portail fournisseur : chaque fournisseur ne voit que ses propres transactions et reversements.
     Route::middleware(['auth:sanctum', 'role:supplier'])->prefix('supplier')->group(function () {
+        Route::get('/profile', [SupplierPortalController::class, 'profile']);
         Route::get('/transactions', [SupplierPortalController::class, 'transactions']);
         Route::get('/settlements', [SupplierPortalController::class, 'settlements']);
     });

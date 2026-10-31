@@ -14,6 +14,25 @@ class SupplierPortalController extends Controller
         return Supplier::where('owner_user_id', $request->user()->id)->firstOrFail();
     }
 
+    // Informations professionnelles du fournisseur connecté (jamais celles d'un autre).
+    public function profile(Request $request)
+    {
+        $supplier = $this->supplierFor($request);
+
+        return response()->json([
+            'data' => [
+                'business_name' => $supplier->business_name,
+                'country_code' => $supplier->country_code,
+                'category' => $supplier->category,
+                'settlement_currency' => $supplier->settlement_currency,
+                'contact_email' => $supplier->contact_email,
+                'contact_phone' => $supplier->contact_phone,
+                'status' => $supplier->status,
+                'created_at' => $supplier->created_at,
+            ],
+        ]);
+    }
+
     public function transactions(Request $request)
     {
         $supplier = $this->supplierFor($request);
