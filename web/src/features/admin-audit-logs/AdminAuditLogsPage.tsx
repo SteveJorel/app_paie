@@ -8,6 +8,21 @@ function shortType(type: string) {
   return parts[parts.length - 1];
 }
 
+function formatChanges(changes: unknown): string {
+  // La base renvoie le JSON sous forme de texte : on le relit pour l'afficher indenté.
+  let value = changes;
+
+  if (typeof value === 'string') {
+    try {
+      value = JSON.parse(value);
+    } catch {
+      return value as string;
+    }
+  }
+
+  return JSON.stringify(value, null, 2);
+}
+
 export default function AdminAuditLogsPage() {
   const [rows, setRows] = useState<AuditLogRow[]>([]);
   const [page, setPage] = useState(1);
@@ -120,7 +135,7 @@ export default function AdminAuditLogsPage() {
                   {expanded === row.id && row.changes && (
                     <tr>
                       <td colSpan={5}>
-                        <pre className="json-preview">{JSON.stringify(row.changes, null, 2)}</pre>
+                        <pre className="json-preview">{formatChanges(row.changes)}</pre>
                       </td>
                     </tr>
                   )}

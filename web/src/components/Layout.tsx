@@ -18,6 +18,7 @@ export default function Layout({ children }: { children: ReactNode }) {
     navItems.push({ to: '/admin/transactions', label: 'Transactions' });
   }
   if (role === 'admin') {
+    navItems.push({ to: '/admin/payment-methods', label: 'Moyens de paiement' });
     navItems.push({ to: '/admin/audit-logs', label: "Journal d'audit" });
   }
 

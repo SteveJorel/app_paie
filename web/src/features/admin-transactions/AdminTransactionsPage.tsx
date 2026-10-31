@@ -4,10 +4,15 @@ import {
   type TransactionRow,
   type TransactionFilters,
 } from './adminTransactionsRepository';
+import TransactionActionModal, { type ActionType } from './TransactionActionModal';
+import { useAuth } from '../auth/useAuth';
 import { ApiException } from '../../core/apiException';
 import { formatMinor, formatDateTime, STATUS_LABELS, statusBadgeClass } from '../../core/format';
 
 export default function AdminTransactionsPage() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === 'admin';
+
   const [rows, setRows] = useState<TransactionRow[]>([]);
   const [page, setPage] = useState(1);
   const [lastPage, setLastPage] = useState(1);
@@ -15,6 +20,8 @@ export default function AdminTransactionsPage() {
   const [appliedFilters, setAppliedFilters] = useState<TransactionFilters>({}); // filtres réellement appliqués
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [banner, setBanner] = useState<string | null>(null);
+  const [action, setAction] = useState<{ type: ActionType; row: TransactionRow } | null>(null);
   const latestRequest = useRef(0);
 
   async function load(targetPage: number, activeFilters: TransactionFilters) {
@@ -50,6 +57,12 @@ export default function AdminTransactionsPage() {
     setFilters({});
     setAppliedFilters({});
     load(1, {});
+  }
+
+  function handleActionDone(message: string) {
+    setAction(null);
+    setBanner(message);
+    load(page, appliedFilters);
   }
 
   return (
@@ -95,6 +108,7 @@ export default function AdminTransactionsPage() {
         </button>
       </form>
 
+      {banner && <p className="banner-success">{banner}</p>}
       {error && <p className="auth-error">{error}</p>}
 
       {isLoading ? (
@@ -111,12 +125,13 @@ export default function AdminTransactionsPage() {
                 <th>Montant</th>
                 <th>Statut</th>
                 <th>Date</th>
+                {isAdmin && <th>Actions</th>}
               </tr>
             </thead>
             <tbody>
               {rows.length === 0 && (
                 <tr>
-                  <td colSpan={7}>Aucune transaction.</td>
+                  <td colSpan={isAdmin ? 8 : 7}>Aucune transaction.</td>
                 </tr>
               )}
               {rows.map((row) => (
@@ -130,6 +145,27 @@ export default function AdminTransactionsPage() {
                     <span className={`badge ${statusBadgeClass(row.status)}`}>{STATUS_LABELS[row.status] ?? row.status}</span>
                   </td>
                   <td>{formatDateTime(row.created_at)}</td>
+                  {isAdmin && (
+                    <td>
+                      <div className="actions-cell">
+                        {(row.status === 'paid' || row.status === 'disputed') && (
+                          <button className="btn btn-outline" onClick={() => setAction({ type: 'refund', row })}>
+                            Rembourser
+                          </button>
+                        )}
+                        {row.status === 'paid' && (
+                          <button className="btn btn-outline" onClick={() => setAction({ type: 'dispute', row })}>
+                            Contester
+                          </button>
+                        )}
+                        {row.status === 'disputed' && (
+                          <button className="btn btn-outline" onClick={() => setAction({ type: 'resolve', row })}>
+                            Résoudre
+                          </button>
+                        )}
+                      </div>
+                    </td>
+                  )}
                 </tr>
               ))}
             </tbody>
@@ -147,6 +183,15 @@ export default function AdminTransactionsPage() {
             </button>
           </div>
         </>
+      )}
+
+      {action && (
+        <TransactionActionModal
+          type={action.type}
+          row={action.row}
+          onClose={() => setAction(null)}
+          onDone={handleActionDone}
+        />
       )}
     </div>
   );

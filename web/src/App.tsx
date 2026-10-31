@@ -7,6 +7,7 @@ import AdminSuppliersPage from './features/admin-suppliers/AdminSuppliersPage';
 import AdminCommissionRulesPage from './features/admin-commission-rules/AdminCommissionRulesPage';
 import AdminReportsPage from './features/admin-reports/AdminReportsPage';
 import AdminTransactionsPage from './features/admin-transactions/AdminTransactionsPage';
+import AdminPaymentMethodsPage from './features/admin-payment-methods/AdminPaymentMethodsPage';
 import AdminAuditLogsPage from './features/admin-audit-logs/AdminAuditLogsPage';
 
 export default function App() {
@@ -59,6 +60,16 @@ export default function App() {
           <ProtectedRoute allowedRoles={['admin', 'finance']}>
             <Layout>
               <AdminTransactionsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/admin/payment-methods"
+        element={
+          <ProtectedRoute allowedRoles={['admin']}>
+            <Layout>
+              <AdminPaymentMethodsPage />
             </Layout>
           </ProtectedRoute>
         }
