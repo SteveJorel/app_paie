@@ -27,6 +27,12 @@ export interface TransactionFilters {
   page?: number;
 }
 
+export interface RefundResult {
+  reference: string;
+  amount_minor: number;
+  currency: string;
+}
+
 function buildQuery(filters: TransactionFilters): string {
   const params = new URLSearchParams();
   Object.entries(filters).forEach(([key, value]) => {
@@ -40,5 +46,19 @@ export const adminTransactionsRepository = {
     const query = buildQuery(filters);
     const response = await apiClient.get(`/admin/transactions${query ? `?${query}` : ''}`);
     return extractPaginated<TransactionRow>(response);
+  },
+
+  // Remboursement total : le serveur rembourse le montant du paiement.
+  async refund(paymentId: number, reason: string): Promise<RefundResult> {
+    const response = await apiClient.post('/admin/refunds', { payment_id: paymentId, reason });
+    return response.data as RefundResult;
+  },
+
+  async openDispute(paymentId: number, reason: string): Promise<void> {
+    await apiClient.post(`/admin/payments/${paymentId}/dispute`, { reason });
+  },
+
+  async resolveDispute(paymentId: number, resolution: 'rejected' | 'upheld', note: string): Promise<void> {
+    await apiClient.post(`/admin/payments/${paymentId}/resolve-dispute`, { resolution, note: note || null });
   },
 };

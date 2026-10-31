@@ -39,10 +39,9 @@ export default function AdminPaymentMethodsPage() {
     }
   }
 
-  useEffect(() => {
+    useEffect(() => {
     // eslint-disable-next-line react-hooks/set-state-in-effect
     load(country);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [country]);
 
   async function handleChange(row: CountryPaymentMethod, status: string) {
