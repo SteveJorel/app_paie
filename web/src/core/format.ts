@@ -1,5 +1,5 @@
 // Montants en unités mineures (entiers) : 1 XAF = 1, 1 NGN = 100 kobo. Même règle que le serveur.
-const DECIMALS: Record<string, number> = { XAF: 0, NGN: 2 };
+export const DECIMALS: Record<string, number> = { XAF: 0, NGN: 2 };
 
 export function formatMinor(amountMinor: number, currency: string): string {
   const decimals = DECIMALS[currency] ?? 2;

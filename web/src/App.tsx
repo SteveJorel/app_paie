@@ -9,6 +9,8 @@ import AdminReportsPage from './features/admin-reports/AdminReportsPage';
 import AdminTransactionsPage from './features/admin-transactions/AdminTransactionsPage';
 import AdminPaymentMethodsPage from './features/admin-payment-methods/AdminPaymentMethodsPage';
 import AdminAuditLogsPage from './features/admin-audit-logs/AdminAuditLogsPage';
+import SupplierTransactionsPage from './features/supplier-portal/SupplierTransactionsPage';
+import SupplierSettlementsPage from './features/supplier-portal/SupplierSettlementsPage';
 
 export default function App() {
   return (
@@ -20,6 +22,26 @@ export default function App() {
           <ProtectedRoute>
             <Layout>
               <DashboardPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/supplier/transactions"
+        element={
+          <ProtectedRoute allowedRoles={['supplier']}>
+            <Layout>
+              <SupplierTransactionsPage />
+            </Layout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/supplier/settlements"
+        element={
+          <ProtectedRoute allowedRoles={['supplier']}>
+            <Layout>
+              <SupplierSettlementsPage />
             </Layout>
           </ProtectedRoute>
         }
