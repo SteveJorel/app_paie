@@ -1,11 +1,8 @@
 import { useEffect, useState } from 'react';
 import { adminReportsRepository, type SettlementsReport } from './adminReportsRepository';
 import { ApiException } from '../../core/apiException';
-
-function formatMinor(amountMinor: number, currency: string) {
-  const factor = currency === 'NGN' ? 100 : 1;
-  return `${(amountMinor / factor).toLocaleString('fr-FR')} ${currency}`;
-}
+import { formatMinor } from '../../core/format';
+import { downloadCsv, minorToDecimal } from '../../core/csv';
 
 export default function AdminReportsPage() {
   const [report, setReport] = useState<SettlementsReport | null>(null);
@@ -26,10 +23,52 @@ export default function AdminReportsPage() {
 
   const currencies = Object.keys(report.by_currency);
 
+  function handleExport() {
+    if (!report) return;
+
+    const rows: string[][] = currencies.map((currency) => {
+      const row = report.by_currency[currency];
+      return [
+        currency,
+        String(row.payments_paid_count),
+        minorToDecimal(row.volume_paid_minor, currency),
+        minorToDecimal(row.commissions_minor, currency),
+        minorToDecimal(row.settlements_pending_minor, currency),
+        minorToDecimal(row.settlements_settled_minor, currency),
+      ];
+    });
+
+    rows.push(
+      [],
+      ['Indicateur', 'Valeur'],
+      ['Paiements échoués', String(report.payments_failed_count)],
+      ['Paiements expirés', String(report.payments_expired_count)],
+      ['Anomalies', String(report.anomalies_count)],
+      ['Écarts de montant', String(report.amount_mismatches_count)],
+      ['Généré le', new Date().toLocaleString('fr-FR')],
+    );
+
+    downloadCsv(
+      `rapprochement-${new Date().toISOString().slice(0, 10)}.csv`,
+      [
+        'Devise',
+        'Paiements confirmés',
+        'Volume payé',
+        'Commissions générées',
+        'Reversements en attente',
+        'Reversements confirmés',
+      ],
+      rows,
+    );
+  }
+
   return (
     <div>
       <div className="toolbar">
         <h1>Rapport de rapprochement</h1>
+        <button className="btn btn-outline" onClick={handleExport}>
+          Exporter le rapport (CSV)
+        </button>
       </div>
 
       <div className="stats-grid">
