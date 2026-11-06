@@ -3,11 +3,14 @@ import { apiClient } from '../../core/apiClient';
 import { tokenStorage } from '../../core/tokenStorage';
 import { AuthContext, type User } from './authContextTypes';
 
+// Le backend renvoie { user: {...} } (login et /auth/me) ; on accepte aussi { data: {...} }.
 function extractUser(response: unknown): User | null {
-  if (response && typeof response === 'object' && 'data' in (response as object)) {
-    return (response as { data: User }).data;
+  if (response && typeof response === 'object') {
+    const body = response as { user?: User; data?: User };
+    if (body.user && typeof body.user === 'object') return body.user;
+    if (body.data && typeof body.data === 'object') return body.data;
   }
-  return (response as User) ?? null;
+  return null;
 }
 
 export function AuthProvider({ children }: { children: ReactNode }) {
@@ -25,7 +28,15 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     apiClient
       .get('/auth/me')
       .then((response) => {
-        setUser(extractUser(response));
+        const current = extractUser(response);
+
+        if (!current) {
+          tokenStorage.clear();
+          setStatus('unauthenticated');
+          return;
+        }
+
+        setUser(current);
         setStatus('authenticated');
       })
       .catch(() => {
@@ -35,16 +46,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   async function login(login: string, password: string) {
-    const response = (await apiClient.post('/auth/login', { login, password }, false)) as { token: string };
+    const response = (await apiClient.post('/auth/login', { login, password }, false)) as {
+      token: string;
+      user?: User;
+    };
     tokenStorage.save(response.token);
 
-    try {
-      const me = await apiClient.get('/auth/me');
-      setUser(extractUser(me));
-    } catch {
-      setUser(null);
+    // La réponse de connexion contient déjà l'utilisateur ; /auth/me sert de secours.
+    let current = extractUser(response);
+
+    if (!current) {
+      try {
+        current = extractUser(await apiClient.get('/auth/me'));
+      } catch {
+        current = null;
+      }
     }
 
+    setUser(current);
     setStatus('authenticated');
   }
 
