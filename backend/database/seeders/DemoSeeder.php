@@ -26,6 +26,12 @@ class DemoSeeder extends Seeder
 
     public function run(): void
     {
+        if (app()->environment('production')) {
+            $this->command->error('DemoSeeder est interdit en production.');
+
+            return;
+        }
+
         $this->makeUser('finance@example.test', 'Responsable Finance', 'finance');
         $this->makeUser('client@example.test', 'Client Demo', 'client');
         $supplierUser = $this->makeUser('fournisseur@example.test', 'Fournisseur Demo', 'supplier');

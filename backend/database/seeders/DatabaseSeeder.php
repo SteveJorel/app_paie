@@ -10,8 +10,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $email = env('ADMIN_EMAIL');
-        $password = env('ADMIN_PASSWORD');
+        $email = config('platform.admin_email');
+        $password = config('platform.admin_password');
 
         if (! $email || ! $password) {
             $this->command->warn('ADMIN_EMAIL et ADMIN_PASSWORD doivent être définis dans .env.');
