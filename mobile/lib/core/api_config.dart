@@ -1,7 +1,11 @@
 class ApiConfig {
-  // 10.0.2.2 est l'alias standard de l'émulateur Android vers "localhost" de la machine hôte.
-  // Pour un appareil physique sur le même réseau Wi-Fi, remplace par l'adresse IP locale de ta
-  // machine (ex: 192.168.1.42) et démarre le serveur avec :
+  // Adresse de l'API, modifiable au lancement sans toucher au code :
+  //   flutter run --dart-define=API_BASE_URL=http://192.168.1.42:8000/api/v1
+  // Par défaut : 10.0.2.2 = « localhost » de ton PC vu depuis l'émulateur Android.
+  // Appareil physique : utiliser l'IP locale du PC et lancer le serveur avec
   //   php artisan serve --host=0.0.0.0 --port=8000
-    static const String baseUrl = 'http://127.0.0.1:8000/api/v1';
+  static const String baseUrl = String.fromEnvironment(
+    'API_BASE_URL',
+    defaultValue: 'http://10.0.2.2:8000/api/v1',
+  );
 }

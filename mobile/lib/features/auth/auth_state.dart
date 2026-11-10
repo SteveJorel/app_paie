@@ -38,12 +38,7 @@ class AuthState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _repository.login(login: login, password: password);
-      try {
-        user = await _repository.me();
-      } catch (_) {
-        user = null;
-      }
+      user = await _repository.login(login: login, password: password) ?? await _repository.me();
       status = AuthStatus.authenticated;
       return true;
     } catch (e) {
@@ -61,12 +56,8 @@ class AuthState extends ChangeNotifier {
     notifyListeners();
 
     try {
-      await _repository.register(email: email, phone: phone, name: name, password: password);
-      try {
-        user = await _repository.me();
-      } catch (_) {
-        user = null;
-      }
+      user = await _repository.register(email: email, phone: phone, name: name, password: password) ??
+          await _repository.me();
       status = AuthStatus.authenticated;
       return true;
     } catch (e) {
