@@ -26,6 +26,17 @@ Route::prefix('v1')->group(function () {
         ]);
     });
 
+    // Coordonnées du support (publiques : utiles avant même la connexion).
+    Route::get('/support', function () {
+        return response()->json([
+            'data' => [
+                'company_name' => config('receipts.company_name'),
+                'support_email' => config('receipts.support_email'),
+                'support_phone' => config('receipts.support_phone'),
+            ],
+        ]);
+    });
+
     // Événements du prestataire : pas de jeton, l'authenticité repose sur la signature.
     Route::post('/webhooks/{provider}', [WebhookController::class, 'handle'])
         ->where('provider', '[a-z0-9_]+')

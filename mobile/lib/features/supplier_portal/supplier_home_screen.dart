@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../auth/auth_state.dart';
+import '../support/help_screen.dart';
+import 'supplier_profile_view.dart';
 import 'supplier_settlements_view.dart';
 import 'supplier_transactions_view.dart';
 
@@ -10,11 +12,18 @@ class SupplierHomeScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return DefaultTabController(
-      length: 2,
+      length: 3,
       child: Scaffold(
         appBar: AppBar(
           title: const Text('Espace fournisseur'),
           actions: [
+            IconButton(
+              icon: const Icon(Icons.help_outline),
+              tooltip: 'Aide',
+              onPressed: () => Navigator.of(context).push(
+                MaterialPageRoute(builder: (_) => const HelpScreen()),
+              ),
+            ),
             IconButton(
               icon: const Icon(Icons.logout),
               tooltip: 'Se déconnecter',
@@ -23,6 +32,7 @@ class SupplierHomeScreen extends StatelessWidget {
           ],
           bottom: const TabBar(
             tabs: [
+              Tab(text: 'Profil'),
               Tab(text: 'Transactions'),
               Tab(text: 'Reversements'),
             ],
@@ -30,6 +40,7 @@ class SupplierHomeScreen extends StatelessWidget {
         ),
         body: const TabBarView(
           children: [
+            SupplierProfileView(),
             SupplierTransactionsView(),
             SupplierSettlementsView(),
           ],

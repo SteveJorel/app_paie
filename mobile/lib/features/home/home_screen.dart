@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 import '../auth/auth_state.dart';
 import '../suppliers/suppliers_screen.dart';
 import '../supplier_portal/supplier_home_screen.dart';
+import '../support/help_screen.dart';
 import '../transactions/transactions_screen.dart';
 
 class HomeScreen extends StatelessWidget {
@@ -57,6 +58,14 @@ class HomeScreen extends StatelessWidget {
                       MaterialPageRoute(builder: (_) => const TransactionsScreen()),
                     ),
                     child: const Text('Mes transactions'),
+                  ),
+                  const SizedBox(height: 12),
+                  TextButton.icon(
+                    icon: const Icon(Icons.help_outline),
+                    label: const Text('Aide'),
+                    onPressed: () => Navigator.of(context).push(
+                      MaterialPageRoute(builder: (_) => const HelpScreen()),
+                    ),
                   ),
                 ],
               ),
